@@ -1,0 +1,353 @@
+import os
+import colorama
+import json
+
+# determinamos la ruta donde se encuentra el archivo 
+ruta_json = r'C:\Programacion\Comision_24097\Calendario_v2\Especies.json'
+
+#iniciamos un except en caso de que no se encuentre el archivo , y abrimos el archivo en modo lectura.
+#agregamos el metodo encoding, para que trate el texto de forma de poder usar ñ y acentos"
+try:
+    with open(ruta_json, 'r', encoding='utf-8') as archivo:
+        especies = json.load(archivo)
+
+    #funcion para limpiar la pantalla.
+    '''En esta Funcion:
+    Llamamos al modulo os 
+    para utilizar el metodo cls o clear,
+    segun el sistema operativo'''
+    def limpiarPantalla():
+        os.system('cls' if os.name == 'nt' else 'clear')
+        return
+
+    #funcion para buscar por especie.
+    '''
+    En esta función:
+    Abrimos el archivo 'Especies.json' en modo lectura.
+    Cargamos todos los datos del archivo en una variable.
+    Se itera sobre la misma obteniendo claves y valores relacionados a la búsqueda.
+    Y se agregan a la string vacía formateados para presentar una salida agradable.
+    '''
+    def buscar_por_especie(busqueda_especie):
+        print(colorama.Fore.RED + "*" * 50)
+        print(colorama.Fore.GREEN + "Usted eligió Búsqueda por Especie.")
+        print(colorama.Fore.RED + "*" * 50)
+        
+        # Convertimos el argumento a minúsculas para la comparación.
+        busqueda_especie = busqueda_especie.lower()
+        
+        try:
+            # Abrimos el archivo 'Especies.json' en modo lectura.
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                # Cargamos todos los datos del archivo JSON en una variable.
+                especies = json.load(archivo)
+                
+                # Buscamos la especie requerida dentro de la variable, convirtiendo las claves a minúsculas.
+                busqueda = {k.lower(): v for k, v in especies.items()}.get(busqueda_especie)
+                
+                if busqueda:
+                    # Si busqueda es True (valor encontrado), se crea una string vacía.
+                    detalles_formateados = ""
+                    # Se itera sobre el diccionario obteniendo claves y valores relacionados a la búsqueda.
+                    for clave, valor in busqueda.items():
+                        # Y se agregan a la string vacía formateados para presentar una salida agradable.
+                        detalles_formateados += f"{colorama.Fore.GREEN + clave}: {colorama.Fore.RESET + valor}\n"
+                    print(f"{colorama.Fore.YELLOW + busqueda_especie}:\n{detalles_formateados}")
+                else:
+                    # Si la especie no se encuentra, informamos al usuario.
+                    print(colorama.Fore.RESET + f"{colorama.Fore.YELLOW + busqueda_especie}no encontrada en la lista.")
+        except FileNotFoundError:
+            # Si el archivo no se encuentra, informamos al usuario.
+            print("El archivo 'Especies.json' no existe.")
+
+    #funcion para buscar por estacion.
+    '''En esta funcion:
+    Abrimos el archivo 'Especies.json' en modo lectura.
+    Cargamos todos los datos del archivo en una variable.
+    Se itera sobre el diccionario obteniendo los valores relacionados a la búsqueda.
+    y se pregunta al usuario si quiere ver detalles de alguna especie.
+    '''
+    def buscar_por_estacion(estacion):
+        limpiarPantalla()
+        print(colorama.Fore.RED + "*" * 50)
+        print(colorama.Fore.GREEN + "Usted ha seleccionado: Búsqueda por estación.")
+        print(colorama.Fore.RED + "*" * 50)
+
+        #Convertimos el argumento a minúsculas ( y quitamos espacios) para la comparación.
+        estacion = estacion.lower().strip()
+
+        #Dentro de un try, abrimos el archivo 'Especies.json' en modo lectura.
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                especies = json.load(archivo)
+                #Se crea una lista vacia, 
+                busqueda_estacion = []
+                #se itera sobre el  diccionario en busqueda de la clave momento de siembra
+                for especie, detalles in especies.items():
+                    #se obtienen sus valores
+                    momento_de_siembra = detalles.get("Momento de siembra", "")
+                    #se convierten a minusculas y quitan espacios para la comparacion
+                    estaciones = [e.strip().lower() for e in momento_de_siembra.split(',')]
+                    #y de estar en alguna especie, esta se agrega a la lista creada previamente
+                    if estacion in estaciones:
+                        busqueda_estacion.append(especie.lower())
+                #Aqui se presentan al usuario las especies que cumplen el criterio
+                if busqueda_estacion:
+                    print(colorama.Fore.RESET + f"Especies que se pueden sembrar en {colorama.Fore.GREEN + estacion.capitalize()}:")
+                    for especie in busqueda_estacion:
+                        print(colorama.Fore.GREEN + f"- {especie.capitalize()}")
+                    # Aca se pregunta si se quieren ver detalles de alguna de las especies listadas
+                    ver_detalles = input(colorama.Fore.RESET + "¿Quieres ver los detalles de alguna especie? (s/n): ").strip().lower()
+                    if ver_detalles == "s":
+                        especie_seleccionada = input("Escribe el nombre de la especie que quieres ver: ").strip().lower()
+                        if especie_seleccionada in busqueda_estacion:
+                            detalles = especies[especie_seleccionada.capitalize()]
+                            detalles_formateados = ""
+                            for clave, valor in detalles.items():
+                                detalles_formateados += f"{colorama.Fore.GREEN + clave}: {colorama.Fore.RESET + valor}\n"
+                            print(f"{colorama.Fore.GREEN + especie_seleccionada.capitalize()}:\n{detalles_formateados}")
+                        else:
+                            print(colorama.Fore.RESET + f"La especie {colorama.Fore.GREEN + especie_seleccionada.capitalize()} no está en la lista de especies para {estacion}.")
+                else:
+                    # Si la especie no se encuentra, informamos al usuario.
+                    print(colorama.Fore.RED + f"No se encontraron especies para el momento de siembra: {estacion}")
+        except FileNotFoundError:
+            # Si el archivo no se encuentra, informamos al usuario.
+            print(colorama.Fore.RED + "El archivo 'Especies.json' no existe.")
+
+    #funcion para agregar Especie.
+    '''En esta funcion:
+    Creamos un diccionario vacio con clave "Nombre de la especie"
+    al que vamos llenando a traves de ir pidiendo al usuario
+    cargar cada uno de sus elementos
+    que luego se agrega a nuestra coleccion de especies'''
+    def Agregar_especie():
+        print(colorama.Fore.RED + "*" * 50)
+        print(colorama.Fore.GREEN + "Usted ha seleccionado: Agregar una especie.")
+        print(colorama.Fore.RED + "*" * 50)
+        
+        # Obtenemos el nombre de la especie ingresado por el usuario.
+        especie_nombre = input(colorama.Fore.RESET + "Ingresa el nombre de la especie: ")
+        
+        # Creamos un diccionario para los elementos de la especie.
+        especie_elementos = {
+            "Momento de siembra": input("Momento de siembra: "),
+            "Metodo de siembra": input("Método de siembra: "),
+            "Profundidad de siembra": input("Profundidad de siembra: "),
+            "Distancia entre plantas": input("Distancia entre plantas: "),
+            "Distancia entre surcos": input("Distancia entre surcos: "),
+            "Tiempo de germinacion": input("Tiempo de germinacion: "),
+            "Trasplante (si aplica)": input("Trasplante (si aplica): "),
+            "Tiempo de cosecha": input("Tiempo de cosecha: "),
+            "Abonado": input("Abonado: "),
+            "Riego": input("Riego: "),
+            "plagas/observaciones": input("Plagas/observaciones: ")
+        }
+        
+        # Leemos el archivo y actualizamos la colección.
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                datos = json.load(archivo)
+        except FileNotFoundError:
+            datos = {}
+        
+        # Actualizamos o agregamos la nueva especie al diccionario.
+        datos[especie_nombre] = especie_elementos
+        
+        # Guardamos la colección actualizada en el archivo.
+        with open(ruta_json, 'w', encoding='utf-8') as archivo:
+            json.dump(datos, archivo, ensure_ascii=False, indent=4)
+        
+        print( f"La especie {colorama.Fore.GREEN + especie_nombre} se ha agregado con éxito!.")
+
+    #Funcion para modificar Especies.
+    '''En esta funcion:
+    Recorre y verifica que este la especie ingresada, 
+    Luego crea un diccionario que si no se deja vacio ( por eso el "or"),
+    ingresa y guarda los nuevos valores 
+    asociados a su clave modificando (o no),los previos '''
+    def Modificar_especie(nombre_especie):
+        print(colorama.Fore.RED + "*" * 50)
+        print(colorama.Fore.GREEN + "Usted ha seleccionado: Modificar una especie.")
+        print(colorama.Fore.RED + "*" * 50)
+        
+        nombre_especie = nombre_especie.capitalize()
+        
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                especies = json.load(archivo)
+            
+            if nombre_especie in especies:
+                especie_elementos = especies[nombre_especie]
+                print(colorama.Fore.RESET + "Ingresa los nuevos valores para la especie (deja vacío para mantener el valor actual):")
+                especie_elementos = especies[nombre_especie]
+                especie_elementos["Momento de siembra"] = input("Nuevo momento de siembra: ") or especie_elementos["Momento de siembra"]
+                especie_elementos["Metodo de siembra"] = input("Nuevo metodo de siembra: ") or especie_elementos["Metodo de siembra"]
+                especie_elementos["Profundidad de siembra"] = input("Nueva profundidad de siembra: ") or especie_elementos["Profundidad de siembra"]
+                especie_elementos["Distancia entre plantas"] = input("Nueva distancia entre plantas: ") or especie_elementos["Distancia entre plantas"]
+                especie_elementos["Distancia entre surcos"] = input("Nueva distancia entre surcos: ") or especie_elementos["Distancia entre surcos"]
+                especie_elementos["Tiempo de germinacion"] = input("Nuevo tiempo de germinacion: ") or especie_elementos["Tiempo de germinacion"]
+                especie_elementos["Trasplante (si aplica)"] = input("Nuevo trasplante (si aplica): ") or especie_elementos["Trasplante (si aplica)"]
+                especie_elementos["Tiempo de cosecha"] = input("Nuevo tiempo de cosecha: ") or especie_elementos["Tiempo de cosecha"]
+                especie_elementos["Abonado"] = input("Nuevo abonado: ") or especie_elementos["Abonado"]
+                especie_elementos["Riego"] = input("Nuevo riego: ") or especie_elementos["Riego"]
+                especie_elementos["plagas/observaciones"] = input("Nuevas plagas/observaciones: ") or especie_elementos["plagas/observaciones"]
+                # Solicitamos al usuario los nuevos valores o mantenemos los actuales si no se proporciona entrada.
+                for clave in list(especie_elementos.keys()):
+                    nuevo_valor = input(f"Nuevo {clave}: ") or especie_elementos[clave]
+                    especie_elementos[clave] = nuevo_valor
+                
+                especies[nombre_especie] = especie_elementos
+                
+                with open(ruta_json, 'w', encoding='utf-8') as archivo:
+                    json.dump(especies, archivo, ensure_ascii=False, indent=4)
+                
+                print(colorama.Fore.RED + f"La especie '{colorama.Fore.GREEN + nombre_especie}' ha sido modificada correctamente.")
+            else:
+                print(colorama.Fore.RED + f"La especie '{colorama.Fore.GREEN + nombre_especie}' no existe en el archivo.")
+        
+        except FileNotFoundError:
+            print(colorama.Fore.RED + "El archivo 'Especies.json' no existe.")
+        except json.JSONDecodeError:
+            print(colorama.Fore.RED + "Error al leer el archivo 'Especies.json'. Asegúrate de que el formato del archivo sea correcto.")
+
+    #Funcion para eliminar Especie.
+    '''En esta funcion:
+    Eliminamos un diccionario dentro de Especies'''
+    def Eliminar_especie():
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                especies = json.load(archivo)
+            
+            print(colorama.Fore.GREEN +"Especies en el Calendario:")
+            for nombre_especie in especies.keys():
+                print(f"- {nombre_especie}")
+            
+            especie_a_eliminar = input(colorama.Fore.RESET +"Escribe el nombre de la especie que deseas eliminar: ").capitalize()
+            if especie_a_eliminar in especies:
+                confirmacion = input(f"Estás seguro que deseas eliminar la especie '{especie_a_eliminar}'? (s/n): ").lower()
+                if confirmacion == 's':
+                    del especies[especie_a_eliminar]
+                    with open(ruta_json, 'w', encoding='utf-8') as archivo:
+                        json.dump(especies, archivo, ensure_ascii=False, indent=4)
+                    print(f"La especie '{especie_a_eliminar}' ha sido eliminada correctamente.")
+                elif confirmacion == 'n':
+                    print(colorama.Fore.RED + "Eliminación cancelada.")
+                else:
+                    print(colorama.Fore.RED + "Respuesta no válida. Eliminación cancelada.")
+            else:
+                print(colorama.Fore.RED + "La especie no se encuentra en el archivo.")
+        
+        except FileNotFoundError:
+            print("El archivo 'Especies.json' no existe.")
+        except json.JSONDecodeError:
+            print("Error al leer el archivo 'Especies.json'. Asegúrate de que el formato del archivo sea correcto.")
+
+    #Funcion para listar las Especies.
+    '''En esta funcion:
+    Recorremos al diccionario con un for 
+    para extraer por separado las claves y valores y mostrarlas formateadas para 
+    mejor visibilidad y atractivo'''
+    def Listar_especies():
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as archivo:
+                especies = json.load(archivo)
+            
+            print(colorama.Fore.GREEN + "Especies en el Calendario:")
+            for nombre_especie in especies.keys():
+                print(f"- {nombre_especie}")
+            
+            # Preguntar al usuario si desea ver detalles de alguna especie.
+            ver_detalles = input(colorama.Fore.RESET +"¿Quieres ver los detalles de alguna especie? (s/n): ").strip().lower()
+            if ver_detalles == "s":
+                nombre_especie = input("Escribe el nombre de la especie para ver los detalles: ").capitalize()
+                limpiarPantalla()
+                if nombre_especie in especies:
+                    print(f"Detalles de la especie '{nombre_especie}':")
+                    for clave, valor in especies[nombre_especie].items():
+                        print(f"{clave}: {valor}")
+                else:
+                    print(colorama.Fore.RED + "La especie no se encuentra en el archivo.")
+            elif ver_detalles == "n":
+                print(colorama.Fore.RED +"Operación cancelada.")
+            else:
+                print(colorama.Fore.RED +"Respuesta no válida. Por favor, intenta de nuevo.")
+        
+        except FileNotFoundError:
+            print(colorama.Fore.RED + "El archivo 'Especies.json' no existe.")
+        except json.JSONDecodeError:
+            print(colorama.Fore.RED + "Error al leer el archivo 'Especies.json'. Asegúrate de que el formato del archivo sea correcto.")
+        
+    #Funcion para generar el menu
+    '''En esta funcion:
+    Creamos un menu formateado en el que le pedimos al usuario ingresar una opcion
+    segun su necesidad'''
+    def menu():
+        limpiarPantalla()
+        print(colorama.Fore.RED + "*" * 50)
+        print(colorama.Fore.GREEN + "CALENDARIO ANUAL DE SIEMBRA HEMISFERIO SUR".center(45))
+        print(colorama.Fore.RED + "*" * 50)
+        print("")
+        print(colorama.Fore.GREEN + "1" + colorama.Fore.RESET + " Para efectuar una busqueda por especie")
+        print(colorama.Fore.GREEN + "2" + colorama.Fore.RESET + " Para efectuar una busqueda por estación")
+        print(colorama.Fore.GREEN + "3" + colorama.Fore.RESET + " para agregar una especie")
+        print(colorama.Fore.GREEN + "4" + colorama.Fore.RESET + " para modificar una especie")
+        print(colorama.Fore.GREEN + "5" + colorama.Fore.RESET + " para eliminar una especie")
+        print(colorama.Fore.GREEN + "6" + colorama.Fore.RESET + " para listar las especies existentes")
+        print(colorama.Fore.GREEN + "7" + colorama.Fore.RESET + " para salir")
+        op=int(input("seleccione una opción:"))
+        return op
+    op=menu()
+
+    #Programa principal
+    '''Este es el programa principal:
+    Aqui a traves de un condicional, segun la opcion ingresada
+    se llama a la funcion requerida'''
+    while op != 7:
+        match op:
+            case 1:
+                limpiarPantalla()
+                busqueda_especie = input(colorama.Fore.RESET + "Ingrese la especie buscada: ")
+                buscar_por_especie(busqueda_especie)
+                input(colorama.Fore.YELLOW + "Presione enter para continuar.")
+            case 2:
+                limpiarPantalla()
+                estacion_a_buscar = input("Ingrese la estación del año para buscar especies: ")
+                buscar_por_estacion(estacion_a_buscar)
+                input(colorama.Fore.YELLOW + "Presione enter para continuar.")
+            case 3:
+                limpiarPantalla()
+                nueva_especie = Agregar_especie()
+                input(colorama.Fore.YELLOW + "Presione enter para continuar.")
+            case 4:
+                limpiarPantalla()
+                nombre_especie_a_modificar = input("Ingresa el nombre de la especie que deseas modificar: ")
+                Modificar_especie(nombre_especie_a_modificar)
+                input(colorama.Fore.YELLOW + "Presione enter para continuar.")
+            case 5:
+                limpiarPantalla()
+                print(colorama.Fore.RED + "*" * 50)
+                print(colorama.Fore.GREEN + "Usted ha seleccionado: Eliminar una especie")
+                print(colorama.Fore.RED + "*" * 50)
+                Eliminar_especie()
+            case 6:
+                limpiarPantalla()
+                Listar_especies()
+                input(colorama.Fore.YELLOW + "Presione enter para continuar.")
+            case _:
+                print(colorama.Fore.RED + "Opcion no valida!.")
+        op=menu()
+
+except FileNotFoundError:
+    print(f"No se pudo encontrar el archivo 'Especies.json' en la ruta especificada: {ruta_json}")
+except json.JSONDecodeError:
+    print("Error al leer el archivo 'Especies.json'. Asegúrate de que el formato del archivo sea correcto.")
+
+    
+
+
+
+
+
+
+
