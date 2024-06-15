@@ -2,8 +2,11 @@ import os
 import colorama
 import json
 
-# determinamos la ruta donde se encuentra el archivo 
-ruta_json = r'C:\Programacion\Comision_24097\Calendario_v2\Especies.json'
+# determinamos la ruta donde se encuentra el archivo.
+'''En caso de que el programa no encuentre el archivo Especie.json, 
+hacerle click derecho en el explorador y seleccionar "Copy relative path", 
+y luego reemplazar en la variable "ruta_json" la ruta por defecto: "Calendario_v2\Especies.json" pegando la nueva.''' 
+ruta_json = "Calendario_v2\Especies.json"
 
 #iniciamos un except en caso de que no se encuentre el archivo , y abrimos el archivo en modo lectura.
 #agregamos el metodo encoding, para que trate el texto de forma de poder usar ñ y acentos"
@@ -258,14 +261,14 @@ try:
                 print(f"- {nombre_especie}")
             
             # Preguntar al usuario si desea ver detalles de alguna especie.
-            ver_detalles = input(colorama.Fore.RESET +"¿Quieres ver los detalles de alguna especie? (s/n): ").strip().lower()
+            ver_detalles = input(colorama.Fore.RESET + "¿Quieres ver los detalles de alguna especie? (s/n): ").strip().lower()
             if ver_detalles == "s":
                 nombre_especie = input("Escribe el nombre de la especie para ver los detalles: ").capitalize()
                 limpiarPantalla()
                 if nombre_especie in especies:
-                    print(f"Detalles de la especie '{nombre_especie}':")
+                    print(colorama.Fore.RESET + f"Detalles de la especie '{colorama.Fore.YELLOW + nombre_especie}':")
                     for clave, valor in especies[nombre_especie].items():
-                        print(f"{clave}: {valor}")
+                        print(colorama.Fore.RESET + f"{clave}: {valor}")
                 else:
                     print(colorama.Fore.RED + "La especie no se encuentra en el archivo.")
             elif ver_detalles == "n":
